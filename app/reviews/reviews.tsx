@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { LabelAndInput } from "../card";
+import { LabelAndInput } from "../components/text-input";
 
 import Modal from "react-bootstrap/Modal";
 
