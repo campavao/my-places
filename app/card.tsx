@@ -53,12 +53,10 @@ function Card({ id }: { id: number }) {
 
         {!isEditing && (
           <button onClick={() => setEditing(true)} className='text-left w-full'>
-            <div className='p-5'>
-              <a href='#'>
-                <h5 className='mb-2 text-2xl font-bold tracking-tight text-gray-900'>
-                  {details.name}
-                </h5>
-              </a>
+            <div className='p-4'>
+              <h5 className='mb-2 text-2xl font-bold tracking-tight text-gray-900'>
+                {details.name}
+              </h5>
               <p className='mb-3 font-normal text-gray-700'>
                 {details.description}
               </p>
@@ -75,7 +73,6 @@ function Card({ id }: { id: number }) {
               setEditing(false);
 
               if (containerRef.current) {
-                console.log("scorlling back");
                 containerRef.current.scrollIntoView({ behavior: "smooth" });
               }
             }}
@@ -110,7 +107,6 @@ function EditCard({
   const formRef = React.useRef<HTMLFormElement>(null);
 
   React.useEffect(() => {
-    console.log(formRef.current);
     if (formRef.current) {
       formRef.current.scrollIntoView({ behavior: "smooth" });
     }
