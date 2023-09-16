@@ -1,34 +1,105 @@
-import Card from "./card";
+"use client";
 
-import { dummies } from "./dummyData";
+import React from "react";
+import signIn from "@/firebase/auth/signin";
+import signUp from "@/firebase/auth/signup";
+import { useRouter } from "next/navigation";
+import { LabelAndInput } from "./components/text-input";
+import { Button } from "react-bootstrap";
+import addData from "@/firebase/addData";
 
-export default function Home() {
+function getSubmitter(
+  e: Event & { submitter?: HTMLButtonElement }
+): HTMLButtonElement | undefined {
+  return e?.submitter;
+}
+
+function Home() {
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [formError, setFormError] = React.useState("");
+  const router = useRouter();
+
+  const handleForm = async (event: React.ChangeEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const isSignUp = getSubmitter(event.nativeEvent)?.name === "sign up";
+    const login = isSignUp ? signUp : signIn;
+
+    const { result, error } = await login(email, password);
+    if (error) {
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          setFormError("Email already in use. Sign in instead.");
+          break;
+      }
+      console.log(error.code);
+      console.error(error);
+    } else {
+      // else successful
+      console.log(result);
+
+      if (result && isSignUp) {
+        const { result: dataResult, error: dataError } = await addData(
+          "users",
+          result.user.uid,
+          {
+            name: result.user.displayName,
+            email: result.user.email,
+            places: {},
+          }
+        );
+
+        console.log(dataResult, dataError);
+      }
+
+      return router.push("/places");
+    }
+  };
+
   return (
-    <main className='bg-gradient-to-b from-beige to-tan flex flex-col items-center justify-between p-2 pt-10 pb-40 w-full'>
-      <h1 className='w-full mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl text-center'>
-        {"Andrea's Places"}
+    <main className='bg-gradient-to-b from-beige to-tan flex flex-col h-[100vh] w-full justify-center items-center'>
+      <h1 className='w-full pb-8 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl text-center'>
+        My Places
       </h1>
-      <div className='flex flex-col gap-4'>
-        {dummies.map((card, index) => (
-          <Card key={index} {...card} />
-        ))}
-      </div>
-      <button className='flex justify-center items-center fixed right-10 bottom-10 rounded-full text-black bg-shrek w-20 h-20 size-20 hover:bg-green shadow-lg '>
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          fill='none'
-          viewBox='0 0 24 24'
-          strokeWidth='1.5'
-          stroke='currentColor'
-          className='w-6 h-6'
-        >
-          <path
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            d='M12 4.5v15m7.5-7.5h-15'
-          />
-        </svg>
-      </button>
+      <form onSubmit={handleForm} className='flex flex-col gap-10'>
+        <LabelAndInput
+          value={email}
+          labelText='Email'
+          onTextChange={(text) => setEmail(text)}
+          labelProps={{ htmlFor: "email" }}
+          inputProps={{
+            required: true,
+            type: "email",
+            name: "email",
+            id: "email",
+            placeholder: "example@mail.com",
+          }}
+        />
+        <LabelAndInput
+          value={password}
+          labelText='Password'
+          onTextChange={(text) => setPassword(text)}
+          labelProps={{ htmlFor: "password" }}
+          inputProps={{
+            required: true,
+            type: "password",
+            name: "password",
+            id: "password",
+            placeholder: "password",
+          }}
+        />
+        {formError && <p className='text-red-600'>{formError}</p>}
+
+        <Button type='submit' name='sign in'>
+          Sign in
+        </Button>
+        <Button type='submit' name='sign up' variant='secondary'>
+          Sign up
+        </Button>
+      </form>
     </main>
   );
 }
+
+export default Home;

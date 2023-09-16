@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+$theme-colors: (
+  "primary": #ccd5ae,
+  "secondary": #d4a373,
+  "danger": #ff4136
+) !default;
+
+@import "../node_modules/bootstrap/scss/bootstrap";
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -17,11 +25,12 @@
 }
 
 body {
+  font-family: 'Caprasimo', sans-serif;
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  height: 100%;
+  width: 100%
+}
+
+h1 {
+  font-family: var(--font-caprasimo);
 }
