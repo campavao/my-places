@@ -4,6 +4,7 @@ import React from "react";
 import { LabelAndInput } from "../components/text-input";
 
 import Modal from "react-bootstrap/Modal";
+import { Button } from "react-bootstrap";
 
 export interface CompleteReview {
   atmosphere: number;
@@ -13,7 +14,13 @@ export interface CompleteReview {
   items: ReviewItem[];
 }
 
-function Reviews({ completeReview }: { completeReview: CompleteReview }) {
+function Reviews({
+  completeReview,
+  disabled = false,
+}: {
+  completeReview: CompleteReview;
+  disabled?: boolean;
+}) {
   const [updatedReview, setUpdatedReview] =
     React.useState<CompleteReview>(completeReview);
 
@@ -53,6 +60,7 @@ function Reviews({ completeReview }: { completeReview: CompleteReview }) {
         Service:
         <ReviewStars
           review={updatedReview.service}
+          disabled={disabled}
           onChange={(amount) =>
             setUpdatedReview((item) => ({ ...item, service: amount }))
           }
@@ -62,6 +70,7 @@ function Reviews({ completeReview }: { completeReview: CompleteReview }) {
         Atmosphere:
         <ReviewStars
           review={updatedReview.atmosphere}
+          disabled={disabled}
           onChange={(amount) =>
             setUpdatedReview((item) => ({ ...item, atmosphere: amount }))
           }
@@ -71,21 +80,26 @@ function Reviews({ completeReview }: { completeReview: CompleteReview }) {
         Music:
         <ReviewStars
           review={updatedReview.music}
+          disabled={disabled}
           onChange={(amount) =>
             setUpdatedReview((item) => ({ ...item, music: amount }))
           }
         />
       </div>
-      <div className='flex flex-col gap-4'>
-        Food & Drink:
-        {updatedReview.items.map((item, index) => (
-          <ReviewItem
-            key={item.name}
-            item={item}
-            onChange={(item) => updateReviewItems(index, item)}
-          />
-        ))}
-      </div>
+      {(!disabled || updatedReview.items.length > 0) && (
+        <div className='flex flex-col gap-4'>
+          Food & Drink:
+          {updatedReview.items.map((item, index) => (
+            <ReviewItem
+              disabled={disabled}
+              key={item.name}
+              item={item}
+              onChange={(item) => updateReviewItems(index, item)}
+            />
+          ))}
+          {!disabled && <Button>Add</Button>}
+        </div>
+      )}
     </div>
   );
 }
@@ -107,11 +121,12 @@ interface ReviewItem {
 
 interface ReviewItemProps {
   item: ReviewItem;
+  disabled?: boolean;
   onChange: (item: ReviewItem) => void;
 }
 
 function ReviewItem(props: ReviewItemProps) {
-  const { item, onChange } = props;
+  const { item, onChange, disabled } = props;
   const [isEdit, setEditing] = React.useState<boolean>(false);
 
   return (
@@ -148,6 +163,7 @@ function ReviewItem(props: ReviewItemProps) {
               Review
               <ReviewStars
                 review={item.review}
+                disabled={disabled}
                 onChange={(review) => onChange({ ...item, review })}
               />
             </div>
@@ -162,10 +178,11 @@ export default Reviews;
 
 interface ReviewStars {
   review: number;
+  disabled?: boolean;
   onChange?: (amount: number) => void;
 }
 
-function ReviewStars({ review, onChange }: ReviewStars) {
+function ReviewStars({ review, onChange, disabled = false }: ReviewStars) {
   return (
     <div className='flex'>
       {Array(5)
@@ -174,8 +191,14 @@ function ReviewStars({ review, onChange }: ReviewStars) {
           <Star
             key={key + "_selected"}
             fill={key + 1 <= review}
-            isButton={!!onChange}
-            onClick={() => onChange?.(key + 1)}
+            isButton={!!onChange || !disabled}
+            onClick={() => {
+              if (disabled) {
+                return;
+              }
+
+              onChange?.(key + 1);
+            }}
           />
         ))}
     </div>

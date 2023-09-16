@@ -36,8 +36,8 @@ export default function Page() {
 
     if (result) {
       const userData = result.data();
-      if (userData) {
-        const populatedPlaces = await userData?.places.reduce(
+      if (userData?.places) {
+        const populatedPlaces = await userData.places.reduce(
           async (acc: Promise<Record<string, PlaceInfo>>, id: string) => {
             const total = await acc;
             const { result } = await getDocument("places", id);
