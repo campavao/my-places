@@ -4,10 +4,9 @@ import React from "react";
 
 import _ from "lodash";
 
-import Image, { StaticImageData } from "next/image";
+import Image from "next/image";
 import Button from "react-bootstrap/Button";
 
-import defaultRestaurantImg from "../public/default_restaurant.jpg";
 import EditIcon from "../public/edit.svg";
 import UpIcon from "../public/up.svg";
 import DownIcon from "../public/down.svg";
@@ -16,6 +15,7 @@ import Reviews, { CompleteReview } from "./reviews/reviews";
 import { LabelAndInput } from "./components/text-input";
 import { EMPTY_DETAILS } from "./constants";
 import addData from "@/firebase/addData";
+import ImageInput from "./components/image-input";
 
 type View = "min" | "full" | "edit";
 
@@ -27,8 +27,6 @@ function Card({ id, place }: { id: string; place: PlaceInfo }) {
   const [view, setView] = React.useState<View>(
     place.name == "" ? "edit" : "min"
   );
-
-  const imgSrc: StaticImageData = details.imgUrl ?? defaultRestaurantImg;
 
   const isChanged = React.useMemo(
     () => _.isEqual(details, place),
@@ -48,11 +46,15 @@ function Card({ id, place }: { id: string; place: PlaceInfo }) {
       ref={containerRef}
       className='min-w-[95vw] bg-white border border-tan rounded-lg shadow text-left hover:shadow-lg'
     >
-      <Image
-        onClick={() => setView("full")}
-        className='w-full max-h-48 rounded-t-lg object-cover object-bottom'
-        src={imgSrc}
-        alt=''
+      <ImageInput
+        id='card'
+        imageName={details.imgName}
+        onChange={(name) => {
+          console.log("why hitting here??", name);
+          setDetails((detail) => ({ ...detail, imgName: name }));
+        }}
+        showReupload={view === "edit"}
+        imageClassName='rounded-b-none'
       />
 
       {view === "min" && (
@@ -126,6 +128,7 @@ function DisplayCard({
         <div>{details.description}</div>
         {details.location && (
           <a
+            target='_blank'
             href={`https://www.google.com/maps/search/?api=1&query=${encodeURI(
               details.location
             )}`}
@@ -133,7 +136,11 @@ function DisplayCard({
             {details.location}
           </a>
         )}
-        {website && <a href={website}>{details.website}</a>}
+        {website && (
+          <a target='_blank' href={website}>
+            {details.website}
+          </a>
+        )}
         <Reviews completeReview={details.completeReview} disabled />
       </div>
       <button
@@ -153,7 +160,7 @@ export interface PlaceInfo {
   website?: string;
   completeReview: CompleteReview;
   thingsToTry?: string[];
-  imgUrl?: StaticImageData;
+  imgName?: string;
 }
 
 function EditCard({

@@ -9,6 +9,7 @@ export const EMPTY_DETAILS: PlaceInfo = {
     atmosphere: 0,
     service: 0,
     music: 0,
+    bathroom: 0,
     items: [],
   },
   thingsToTry: [],
@@ -44,4 +45,5 @@ export const EMPTY_REVIEW_ITEM: ReviewItem = {
   name: "",
   review: 0,
   type: ReviewItemType.APP,
+  imgName: "",
 };

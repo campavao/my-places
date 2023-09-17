@@ -15,11 +15,14 @@ import {
   ReviewItemType,
   ReviewItemTypeDetails,
 } from "../constants";
+import _ from "lodash";
+import ImageInput from "../components/image-input";
 
 export interface CompleteReview {
   atmosphere: number;
   service: number;
   music: number;
+  bathroom: number;
   /** Reviews for foods and drinks */
   items: ReviewItem[];
 }
@@ -64,9 +67,10 @@ function Reviews({
       completeReview.atmosphere +
       completeReview.service +
       completeReview.music +
+      completeReview.bathroom +
       completeReview.items.reduce((acc, curr) => acc + curr.review, 0);
 
-    const total = 3 + completeReview.items.length;
+    const total = 4 + completeReview.items.length;
 
     return sum / total;
   }, [
@@ -74,6 +78,7 @@ function Reviews({
     completeReview.items,
     completeReview.music,
     completeReview.service,
+    completeReview.bathroom,
   ]);
 
   return (
@@ -81,30 +86,18 @@ function Reviews({
       <div className='flex justify-between gap-4'>
         Overall: <ReviewStars review={overall} />
       </div>
-      <div className='flex justify-between gap-4'>
-        Service:
-        <ReviewStars
-          review={completeReview.service}
-          disabled={disabled}
-          onChange={(service) => updateReview({ service })}
-        />
-      </div>
-      <div className='flex justify-between gap-4'>
-        Atmosphere:
-        <ReviewStars
-          review={completeReview.atmosphere}
-          disabled={disabled}
-          onChange={(atmosphere) => updateReview({ atmosphere })}
-        />
-      </div>
-      <div className='flex justify-between gap-4'>
-        Music:
-        <ReviewStars
-          review={completeReview.music}
-          disabled={disabled}
-          onChange={(music) => updateReview({ music })}
-        />
-      </div>
+      {Object.entries(completeReview)
+        .filter(([key]) => key !== "items")
+        .map(([key, value]) => (
+          <div key={key} className='flex justify-between gap-4'>
+            {_.capitalize(key)}:
+            <ReviewStars
+              review={value}
+              disabled={disabled}
+              onChange={(amount) => updateReview({ [key]: amount })}
+            />
+          </div>
+        ))}
       {(!disabled || completeReview.items.length > 0) && (
         <div className='flex flex-col gap-4'>
           Food & Drink:
@@ -132,7 +125,7 @@ export interface ReviewItem {
   review: number;
   type: ReviewItemType;
   description?: string;
-  imgUrl?: string;
+  imgName?: string;
 }
 
 interface ReviewItemProps {
@@ -154,7 +147,16 @@ function ReviewItem(props: ReviewItemProps) {
   return (
     <>
       <div className='flex items-center gap-4 border rounded-md p-2'>
-        <div className='h-20 w-20 border rounded-md'>{item.imgUrl}</div>
+        <ImageInput
+          id={`${changedItem.name}-review-item`}
+          imageName={changedItem.imgName}
+          onChange={(name) =>
+            setChangedItem((i) => {
+              console.log(i, name);
+              return { ...i, imgName: name };
+            })
+          }
+        />
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -183,9 +185,12 @@ function ReviewItem(props: ReviewItemProps) {
           Update item
         </Modal.Header>
         <Modal.Body>
-          <div className='h-20 w-20 border rounded-md'>
-            {changedItem.imgUrl}
-          </div>
+          <ImageInput
+            id={`${changedItem.name}-review-item`}
+            imageName={changedItem.imgName}
+            onChange={(imgName) => setChangedItem((i) => ({ ...i, imgName }))}
+            showReupload
+          />
           <div className='flex flex-col gap-1 text-black pb-4'>
             <LabelAndInput
               labelText='Name'
