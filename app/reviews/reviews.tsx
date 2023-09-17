@@ -4,7 +4,17 @@ import React from "react";
 import { LabelAndInput } from "../components/text-input";
 
 import Modal from "react-bootstrap/Modal";
-import { Button } from "react-bootstrap";
+import Badge from "react-bootstrap/Badge";
+import Button from "react-bootstrap/Button";
+import DropdownItem from "react-bootstrap/DropdownItem";
+import DropdownButton from "react-bootstrap/DropdownButton";
+
+import { PlaceInfo } from "../card";
+import {
+  EMPTY_REVIEW_ITEM,
+  ReviewItemType,
+  ReviewItemTypeDetails,
+} from "../constants";
 
 export interface CompleteReview {
   atmosphere: number;
@@ -17,38 +27,53 @@ export interface CompleteReview {
 function Reviews({
   completeReview,
   disabled = false,
+  setDetails,
 }: {
   completeReview: CompleteReview;
   disabled?: boolean;
+  setDetails?: React.Dispatch<React.SetStateAction<PlaceInfo>>;
 }) {
-  const [updatedReview, setUpdatedReview] =
-    React.useState<CompleteReview>(completeReview);
+  const updateReview = React.useCallback(
+    (review: Partial<CompleteReview>) => {
+      setDetails?.((detail) => ({
+        ...detail,
+        completeReview: { ...completeReview, ...review },
+      }));
+    },
+    [completeReview, setDetails]
+  );
+
+  const addReviewItem = React.useCallback(() => {
+    const newItems = [...completeReview.items, EMPTY_REVIEW_ITEM];
+
+    updateReview({ items: newItems });
+  }, [completeReview.items, updateReview]);
 
   const updateReviewItems = React.useCallback(
     (index: number, item: ReviewItem) => {
-      const newItems = [...updatedReview.items];
+      const newItems = [...completeReview.items];
       newItems[index] = item;
 
-      setUpdatedReview((review) => ({ ...review, items: newItems }));
+      updateReview({ items: newItems });
     },
-    [updatedReview.items]
+    [completeReview.items, updateReview]
   );
 
   const overall = React.useMemo(() => {
     const sum =
-      updatedReview.atmosphere +
-      updatedReview.service +
-      updatedReview.music +
-      updatedReview.items.reduce((acc, curr) => acc + curr.review, 0);
+      completeReview.atmosphere +
+      completeReview.service +
+      completeReview.music +
+      completeReview.items.reduce((acc, curr) => acc + curr.review, 0);
 
-    const total = 3 + updatedReview.items.length;
+    const total = 3 + completeReview.items.length;
 
     return sum / total;
   }, [
-    updatedReview.atmosphere,
-    updatedReview.items,
-    updatedReview.music,
-    updatedReview.service,
+    completeReview.atmosphere,
+    completeReview.items,
+    completeReview.music,
+    completeReview.service,
   ]);
 
   return (
@@ -59,37 +84,31 @@ function Reviews({
       <div className='flex justify-between gap-4'>
         Service:
         <ReviewStars
-          review={updatedReview.service}
+          review={completeReview.service}
           disabled={disabled}
-          onChange={(amount) =>
-            setUpdatedReview((item) => ({ ...item, service: amount }))
-          }
+          onChange={(service) => updateReview({ service })}
         />
       </div>
       <div className='flex justify-between gap-4'>
         Atmosphere:
         <ReviewStars
-          review={updatedReview.atmosphere}
+          review={completeReview.atmosphere}
           disabled={disabled}
-          onChange={(amount) =>
-            setUpdatedReview((item) => ({ ...item, atmosphere: amount }))
-          }
+          onChange={(atmosphere) => updateReview({ atmosphere })}
         />
       </div>
       <div className='flex justify-between gap-4'>
         Music:
         <ReviewStars
-          review={updatedReview.music}
+          review={completeReview.music}
           disabled={disabled}
-          onChange={(amount) =>
-            setUpdatedReview((item) => ({ ...item, music: amount }))
-          }
+          onChange={(music) => updateReview({ music })}
         />
       </div>
-      {(!disabled || updatedReview.items.length > 0) && (
+      {(!disabled || completeReview.items.length > 0) && (
         <div className='flex flex-col gap-4'>
           Food & Drink:
-          {updatedReview.items.map((item, index) => (
+          {completeReview.items.map((item, index) => (
             <ReviewItem
               disabled={disabled}
               key={item.name}
@@ -97,24 +116,21 @@ function Reviews({
               onChange={(item) => updateReviewItems(index, item)}
             />
           ))}
-          {!disabled && <Button>Add</Button>}
+          {!disabled && (
+            <Button variant='secondary' onClick={addReviewItem}>
+              Add
+            </Button>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-export enum ReviewItemType {
-  APP = "Appetizer",
-  ENTREE = "Entree",
-  DRINK = "Drink",
-  DESSERT = "Dessert",
-}
-
-interface ReviewItem {
+export interface ReviewItem {
   name: string;
   review: number;
-  type: string;
+  type: ReviewItemType;
   description?: string;
   imgUrl?: string;
 }
@@ -127,50 +143,101 @@ interface ReviewItemProps {
 
 function ReviewItem(props: ReviewItemProps) {
   const { item, onChange, disabled } = props;
-  const [isEdit, setEditing] = React.useState<boolean>(false);
+  const [changedItem, setChangedItem] = React.useState<ReviewItem>(item);
+  const [isEdit, setEditing] = React.useState<boolean>(changedItem.name === "");
+
+  const save = React.useCallback(() => {
+    onChange(changedItem);
+    setEditing(false);
+  }, [changedItem, onChange]);
 
   return (
-    <div className='flex items-center gap-4 border rounded-md p-2'>
-      <div className='h-20 w-20 border rounded-md'>{item.imgUrl}</div>
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          setEditing(true);
+    <>
+      <div className='flex items-center gap-4 border rounded-md p-2'>
+        <div className='h-20 w-20 border rounded-md'>{item.imgUrl}</div>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            setEditing(true);
+          }}
+          className='flex flex-col gap-2 text-left w-full'
+        >
+          <div className='flex justify-between w-full'>
+            <div>{item.name}</div>
+            <Badge bg={ReviewItemTypeDetails[item.type].variant}>
+              {item.type.toString()}
+            </Badge>
+          </div>
+          <div>{item.description}</div>
+          <ReviewStars review={item.review} disabled={disabled} />
+        </button>
+      </div>
+      <Modal
+        show={isEdit}
+        onHide={() => {
+          console.log("close???");
+          setEditing(false);
         }}
-        className='flex flex-col gap-2 text-left w-full'
       >
-        <div>{item.name}</div>
-        <div>{item.description}</div>
-        <div>{item.type.toString()}</div>
-        <ReviewStars review={item.review} />
-      </button>
-      <Modal show={isEdit} onHide={() => setEditing(false)}>
-        <Modal.Header closeButton>Update item</Modal.Header>
+        <Modal.Header closeButton className='border-0'>
+          Update item
+        </Modal.Header>
         <Modal.Body>
-          <div className='h-20 w-20 border rounded-md'>{item.imgUrl}</div>
-          <div className='flex flex-col gap-2'>
+          <div className='h-20 w-20 border rounded-md'>
+            {changedItem.imgUrl}
+          </div>
+          <div className='flex flex-col gap-1 text-black pb-4'>
             <LabelAndInput
               labelText='Name'
-              value={item.name}
-              onTextChange={(name) => onChange({ ...item, name })}
+              value={changedItem.name}
+              onTextChange={(name) =>
+                setChangedItem((cItem) => ({ ...cItem, name }))
+              }
             />
             <LabelAndInput
               labelText='Description'
-              value={item.description}
-              onTextChange={(description) => onChange({ ...item, description })}
+              value={changedItem.description}
+              onTextChange={(description) =>
+                setChangedItem((cItem) => ({ ...cItem, description }))
+              }
             />
             <div>
-              Review
+              <label>Review</label>
+
               <ReviewStars
-                review={item.review}
+                review={changedItem.review}
                 disabled={disabled}
-                onChange={(review) => onChange({ ...item, review })}
+                onChange={(review) =>
+                  setChangedItem((cItem) => ({ ...cItem, review }))
+                }
               />
             </div>
+            <div>
+              <label>Type</label>
+              <DropdownButton
+                variant='secondary'
+                className='w-full'
+                title={changedItem.type.toString()}
+              >
+                {Object.values(ReviewItemType).map((type, index) => (
+                  <DropdownItem
+                    key={type + index}
+                    onClick={() =>
+                      setChangedItem((cItem) => ({ ...cItem, type }))
+                    }
+                  >
+                    {type}
+                  </DropdownItem>
+                ))}
+              </DropdownButton>
+            </div>
           </div>
+          <Button className='w-full' onClick={save}>
+            Save
+          </Button>
         </Modal.Body>
       </Modal>
-    </div>
+    </>
   );
 }
 

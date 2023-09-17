@@ -5,7 +5,9 @@
 $theme-colors: (
   "primary": #ccd5ae,
   "secondary": #d4a373,
-  "danger": #ff4136
+  "tertiary": #283618,
+  "info": #dda15e,
+  "danger": #ff4136,
 ) !default;
 
 @import "../node_modules/bootstrap/scss/bootstrap";
@@ -25,10 +27,10 @@ $theme-colors: (
 }
 
 body {
-  font-family: 'Caprasimo', sans-serif;
+  font-family: "Caprasimo", sans-serif;
   color: rgb(var(--foreground-rgb));
   height: 100%;
-  width: 100%
+  width: 100%;
 }
 
 h1 {

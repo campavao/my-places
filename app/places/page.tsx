@@ -12,6 +12,7 @@ import { EMPTY_DETAILS } from "../constants";
 
 import getDocument from "@/firebase/getData";
 import addData from "@/firebase/addData";
+import _ from "lodash";
 
 export default function Page() {
   const { user } = useAuthContext();
@@ -36,7 +37,8 @@ export default function Page() {
 
     if (result) {
       const userData = result.data();
-      if (userData?.places) {
+      if (userData?.places && !_.isEmpty(userData?.places)) {
+        console.log(userData)
         const populatedPlaces = await userData.places.reduce(
           async (acc: Promise<Record<string, PlaceInfo>>, id: string) => {
             const total = await acc;

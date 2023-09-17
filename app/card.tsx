@@ -5,6 +5,7 @@ import React from "react";
 import _ from "lodash";
 
 import Image, { StaticImageData } from "next/image";
+import Button from "react-bootstrap/Button";
 
 import defaultRestaurantImg from "../public/default_restaurant.jpg";
 import EditIcon from "../public/edit.svg";
@@ -103,6 +104,13 @@ function DisplayCard({
   details: PlaceInfo;
   setView: React.Dispatch<React.SetStateAction<View>>;
 }) {
+  const website = details.website
+    ? details.website.includes("http://") ||
+      details.website.includes("https://")
+      ? details.website
+      : "https://" + details.website
+    : undefined;
+
   return (
     <div className='p-4 position-relative'>
       <button
@@ -118,14 +126,14 @@ function DisplayCard({
         <div>{details.description}</div>
         {details.location && (
           <a
-            href={` https://www.google.com/maps/search/?api=1&query=${encodeURI(
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURI(
               details.location
             )}`}
           >
             {details.location}
           </a>
         )}
-        {details.website && <a href={details.website}>{details.website}</a>}
+        {website && <a href={website}>{details.website}</a>}
         <Reviews completeReview={details.completeReview} disabled />
       </div>
       <button
@@ -210,7 +218,10 @@ function EditCard({
       />
       <div className='flex flex-col gap-4'>
         <label>Review</label>
-        <Reviews completeReview={details.completeReview} />
+        <Reviews
+          completeReview={details.completeReview}
+          setDetails={setDetails}
+        />
       </div>
       <div>
         <label>Things to try</label>
@@ -218,13 +229,13 @@ function EditCard({
           {details.thingsToTry?.map((dish) => <li key={dish}>{dish}</li>)}
         </ul>
       </div>
-      <button
-        className='bg-transparent hover:bg-brown text-brown font-semibold hover:text-white py-2 px-4 border border-brown hover:border-transparent rounded'
+      <Button
+        className='font-semibold py-2 px-4 rounded'
         disabled={details.name === ""}
         onClick={update}
       >
         {isChanged ? "Close" : "Save"}
-      </button>
+      </Button>
     </form>
   );
 }
