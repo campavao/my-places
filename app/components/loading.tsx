@@ -2,7 +2,7 @@ import React from "react";
 
 function Loading() {
   return (
-    <div className='absolute inset-1/2'>
+    <div className='absolute inset-1/2 ml-[-15px]'>
       <div role='status'>
         <svg
           aria-hidden='true'
