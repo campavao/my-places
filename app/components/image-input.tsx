@@ -45,6 +45,7 @@ function ImageInput({
       getDownloadURL(storageRef)
         .then((url) => {
           setImageSrc(url);
+          setLoading(false)
         })
         .catch((error) => {
           console.error("Error retrieving image:", error);
@@ -56,14 +57,15 @@ function ImageInput({
     <div
       className={`${className} w-full h-full position-relative min-h-[200px] flex flex-col gap-2`}
     >
-      {imageSrc ? (
+      {loading ? (
+        <Loading />
+      ) : imageSrc ? (
         <>
           <Image
             className={`${imageClassName} w-full max-h-48 rounded-lg object-cover object-center`}
             src={imageSrc}
             layout='fill'
             alt=''
-            onLoadingComplete={() => setLoading(false)}
           />
           {showReupload && (
             <div>
@@ -86,15 +88,19 @@ function ImageInput({
             </div>
           )}
         </>
-      ) : loading ? (
-        <Loading />
-      ) : (
+      )  : (
         <>
           <label
             className='flex items-center self-center min-h-[200px] text-black cursor-pointer'
             htmlFor={`${id}-image-upload`}
           >
-            Upload
+            <Image
+              className='bg-white rounded-full p-1 absolute inset-1/2 ml-[-15px] cursor-pointer'
+              src={UploadIcon}
+              width={30}
+              height={30}
+              alt='upload'
+            />
           </label>
           <input
             className='hidden'
