@@ -12,6 +12,9 @@ import { EMPTY_DETAILS } from "../constants";
 
 import getDocument from "@/firebase/getData";
 import addData from "@/firebase/addData";
+
+import SignoutIcon from '../../public/signout.svg';
+import Image from 'next/image';
 import _ from "lodash";
 
 export default function Page() {
@@ -38,7 +41,6 @@ export default function Page() {
     if (result) {
       const userData = result.data();
       if (userData?.places && !_.isEmpty(userData?.places)) {
-        console.log(userData)
         const populatedPlaces = await userData.places.reduce(
           async (acc: Promise<Record<string, PlaceInfo>>, id: string) => {
             const total = await acc;
@@ -94,9 +96,9 @@ export default function Page() {
   return (
     <main className='bg-gradient-to-b from-beige to-tan flex flex-col items-center p-2 pt-10 pb-40 min-h-[100vh] h-full w-full'>
       <button onClick={handleSignOut} className='absolute top-4 right-4'>
-        Sign out
+        <Image src={SignoutIcon} width={20} height={20} alt='sign out' />
       </button>
-      <h1 className='w-full mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl text-center'>
+      <h1 className='w-full mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl text-center pt-4'>
         {"Andrea's Places"}
       </h1>
       <div className='flex flex-col gap-4 h-full'>

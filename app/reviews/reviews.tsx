@@ -150,12 +150,7 @@ function ReviewItem(props: ReviewItemProps) {
         <ImageInput
           id={`${changedItem.name}-review-item`}
           imageName={changedItem.imgName}
-          onChange={(name) =>
-            setChangedItem((i) => {
-              console.log(i, name);
-              return { ...i, imgName: name };
-            })
-          }
+          onChange={(name) => setChangedItem((i) => ({ ...i, imgName: name }))}
         />
         <button
           onClick={(e) => {
@@ -164,29 +159,21 @@ function ReviewItem(props: ReviewItemProps) {
           }}
           className='flex flex-col gap-2 text-left w-full'
         >
-          <div className='flex justify-between w-full'>
-            <div>{item.name}</div>
-            <Badge bg={ReviewItemTypeDetails[item.type].variant}>
-              {item.type.toString()}
-            </Badge>
-          </div>
+          <div>{item.name}</div>
           <div>{item.description}</div>
+          <Badge bg={ReviewItemTypeDetails[item.type].variant}>
+            {item.type.toString()}
+          </Badge>
           <ReviewStars review={item.review} disabled={disabled} />
         </button>
       </div>
-      <Modal
-        show={isEdit}
-        onHide={() => {
-          console.log("close???");
-          setEditing(false);
-        }}
-      >
+      <Modal show={isEdit} onHide={() => setEditing(false)}>
         <Modal.Header closeButton className='border-0'>
           Update item
         </Modal.Header>
         <Modal.Body>
           <ImageInput
-            id={`${changedItem.name}-review-item`}
+            id={`${changedItem.name}-modal-review-item`}
             imageName={changedItem.imgName}
             onChange={(imgName) => setChangedItem((i) => ({ ...i, imgName }))}
             showReupload

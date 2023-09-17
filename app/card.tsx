@@ -50,7 +50,6 @@ function Card({ id, place }: { id: string; place: PlaceInfo }) {
         id='card'
         imageName={details.imgName}
         onChange={(name) => {
-          console.log("why hitting here??", name);
           setDetails((detail) => ({ ...detail, imgName: name }));
         }}
         showReupload={view === "edit"}
@@ -117,7 +116,7 @@ function DisplayCard({
     <div className='p-4 position-relative'>
       <button
         onClick={() => setView("edit")}
-        className='absolute top-6 right-6'
+        className='absolute top-2 right-4'
       >
         <Image alt='edit' src={EditIcon} width={20} height={20} />
       </button>
