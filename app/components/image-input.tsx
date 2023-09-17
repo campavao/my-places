@@ -3,6 +3,8 @@ import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import Image from "next/image";
 import Loading from "./loading";
 
+import UploadIcon from "../../public/upload.svg";
+
 function ImageInput({
   id,
   imageName,
@@ -65,11 +67,14 @@ function ImageInput({
           />
           {showReupload && (
             <div>
-              <label
-                className='absolute top-4 right-4 cursor-pointer'
-                htmlFor={`${id}-image-upload`}
-              >
-                Upload
+              <label htmlFor={`${id}-image-upload`}>
+                <Image
+                  className='bg-white rounded-full p-1 absolute top-4 right-4 cursor-pointer'
+                  src={UploadIcon}
+                  width={30}
+                  height={30}
+                  alt='upload'
+                />
               </label>
               <input
                 className='hidden'
