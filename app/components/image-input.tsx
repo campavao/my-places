@@ -12,6 +12,7 @@ function ImageInput({
   showReupload,
   className,
   imageClassName,
+  disabled
 }: {
   id: string;
   className?: string;
@@ -19,6 +20,7 @@ function ImageInput({
   imageName?: string;
   onChange: (name: string) => void;
   showReupload?: boolean;
+  disabled?: boolean
 }) {
   const [imageSrc, setImageSrc] = React.useState<string>();
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -88,7 +90,7 @@ function ImageInput({
             </div>
           )}
         </>
-      )  : (
+      ) : (
         <>
           <label
             className='flex items-center self-center min-h-[200px] text-black cursor-pointer'
@@ -108,6 +110,7 @@ function ImageInput({
             type='file'
             accept='image/*'
             onChange={handleImageChange}
+            disabled={disabled}
           />
         </>
       )}

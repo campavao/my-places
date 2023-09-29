@@ -62,24 +62,33 @@ function Reviews({
     [completeReview.items, updateReview]
   );
 
-  const overall = React.useMemo(() => {
-    const sum =
-      completeReview.atmosphere +
-      completeReview.service +
-      completeReview.music +
-      completeReview.bathroom +
-      completeReview.items.reduce((acc, curr) => acc + curr.review, 0);
+  const removeReviewItem = React.useCallback(
+    (index: number) => {
+      completeReview.items.splice(index, 1);
 
-    const total = 4 + completeReview.items.length;
+      updateReview({ items: completeReview.items });
+    },
+    [completeReview.items, updateReview]
+  );
+
+  const overall = React.useMemo(() => {
+    const sum = Object.entries(completeReview).reduce((acc, curr) => {
+      const [key, value] = curr;
+      if (key !== "items") {
+        return acc + value;
+      } else {
+        return (
+          acc + completeReview.items.reduce((acc, curr) => acc + curr.review, 0)
+        );
+      }
+    }, 0);
+
+    // amount we're adding minues 'items' and added length
+    const total =
+      Object.keys(completeReview).length - 1 + completeReview.items.length;
 
     return sum / total;
-  }, [
-    completeReview.atmosphere,
-    completeReview.items,
-    completeReview.music,
-    completeReview.service,
-    completeReview.bathroom,
-  ]);
+  }, [completeReview]);
 
   return (
     <div>
@@ -107,6 +116,7 @@ function Reviews({
               key={item.name}
               item={item}
               onChange={(item) => updateReviewItems(index, item)}
+              onRemove={() => removeReviewItem(index)}
             />
           ))}
           {!disabled && (
@@ -132,10 +142,11 @@ interface ReviewItemProps {
   item: ReviewItem;
   disabled?: boolean;
   onChange: (item: ReviewItem) => void;
+  onRemove: () => void;
 }
 
 function ReviewItem(props: ReviewItemProps) {
-  const { item, onChange, disabled } = props;
+  const { item, onChange, onRemove, disabled } = props;
   const [changedItem, setChangedItem] = React.useState<ReviewItem>(item);
   const [isEdit, setEditing] = React.useState<boolean>(changedItem.name === "");
 
@@ -144,29 +155,36 @@ function ReviewItem(props: ReviewItemProps) {
     setEditing(false);
   }, [changedItem, onChange]);
 
+  const remove = React.useCallback(() => {
+    onRemove();
+    setEditing(false);
+  }, [onRemove]);
+
   return (
     <>
-      <div className='flex items-center gap-4 border rounded-md p-2'>
+      <button
+        disabled={disabled}
+        onClick={(e) => {
+          e.preventDefault();
+          setEditing(true);
+        }}
+        className='flex items-center gap-4 border rounded-md p-2'
+      >
         <ImageInput
           id={`${changedItem.name}-review-item`}
           imageName={changedItem.imgName}
           onChange={(name) => setChangedItem((i) => ({ ...i, imgName: name }))}
+          disabled={disabled}
         />
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            setEditing(true);
-          }}
-          className='flex flex-col gap-2 text-left w-full'
-        >
+        <div className='flex flex-col gap-2 text-left w-full'>
           <div>{item.name}</div>
           <div>{item.description}</div>
           <Badge bg={ReviewItemTypeDetails[item.type].variant}>
             {item.type.toString()}
           </Badge>
           <ReviewStars review={item.review} disabled={disabled} />
-        </button>
-      </div>
+        </div>
+      </button>
       <Modal show={isEdit} onHide={() => setEditing(false)}>
         <Modal.Header closeButton className='border-0'>
           Update item
@@ -224,10 +242,13 @@ function ReviewItem(props: ReviewItemProps) {
               </DropdownButton>
             </div>
           </div>
-          <Button className='w-full' onClick={save}>
-            Save
-          </Button>
         </Modal.Body>
+        <Modal.Footer>
+          <Button variant='outline-danger' onClick={remove}>
+            Remove
+          </Button>
+          <Button onClick={save}>Save</Button>
+        </Modal.Footer>
       </Modal>
     </>
   );
