@@ -6,6 +6,9 @@ import _ from "lodash";
 
 import Image from "next/image";
 import Button from "react-bootstrap/Button";
+import Badge from "react-bootstrap/Badge";
+import DropdownItem from "react-bootstrap/DropdownItem";
+import DropdownButton from "react-bootstrap/DropdownButton";
 
 import EditIcon from "../public/edit.svg";
 import UpIcon from "../public/up.svg";
@@ -61,10 +64,14 @@ function Card({ id, place }: { id: string; place: PlaceInfo }) {
           onClick={() => setView("full")}
           className='flex flex-col text-left w-full'
         >
-          <div className='p-4 text-gray-900'>
+          <div className='p-4 text-gray-900 flex flex-col gap-2'>
             <h5 className='mb-2 text-2xl font-bold tracking-tight text-gray-900'>
               {details.name}
             </h5>
+            <div className='flex gap-2 items-center'>
+              <Badge className='w-fit text-black'>{details.cuisine}</Badge>
+              {details.price && <ReviewPrice price={details.price} />}
+            </div>
             <div>{details.description}</div>
           </div>
           <Image
@@ -124,6 +131,10 @@ function DisplayCard({
         {details.name}
       </h5>
       <div className='flex flex-col gap-2 font-normal text-gray-700 pb-4'>
+        <div className='flex gap-2 items-center'>
+          <Badge className='w-fit text-black'>{details.cuisine}</Badge>
+          {details.price && <ReviewPrice price={details.price} />}
+        </div>
         <div>{details.description}</div>
         {details.location && (
           <a
@@ -152,9 +163,18 @@ function DisplayCard({
   );
 }
 
+const PRICE_OPTIONS: { label: string; value: number }[] = [
+  { label: "Cheap", value: 1 },
+  { label: "Affordable", value: 2 },
+  { label: "Pricey", value: 3 },
+  { label: "Fancy", value: 4 },
+];
+
 export interface PlaceInfo {
   name: string;
   description?: string;
+  cuisine?: string;
+  price?: number;
   location?: string;
   website?: string;
   completeReview: CompleteReview;
@@ -192,36 +212,68 @@ function EditCard({
     [close, save]
   );
 
+  const currentPrice = React.useMemo(
+    () =>
+      PRICE_OPTIONS.find(({ value }) => details.price === value) ?? {
+        label: "Set price",
+      },
+    [details.price]
+  );
+
   return (
     <form ref={formRef} className='flex flex-col gap-4 p-4 text-black'>
       <LabelAndInput
         labelText='Name'
         value={details.name}
-        onTextChange={(text) =>
-          setDetails((detail) => ({ ...detail, name: text }))
+        onTextChange={(name) => setDetails((detail) => ({ ...detail, name }))}
+      />
+      <LabelAndInput
+        labelText='Cuisine'
+        value={details.cuisine}
+        onTextChange={(cuisine) =>
+          setDetails((detail) => ({ ...detail, cuisine }))
         }
       />
       <LabelAndInput
         labelText='Description'
         value={details.description}
-        onTextChange={(text) =>
-          setDetails((detail) => ({ ...detail, description: text }))
+        onTextChange={(description) =>
+          setDetails((detail) => ({ ...detail, description }))
         }
       />
       <LabelAndInput
         labelText='Location'
         value={details.location}
-        onTextChange={(text) =>
-          setDetails((detail) => ({ ...detail, location: text }))
+        onTextChange={(location) =>
+          setDetails((detail) => ({ ...detail, location }))
         }
       />
       <LabelAndInput
         labelText='Website'
         value={details.website}
-        onTextChange={(text) =>
-          setDetails((detail) => ({ ...detail, website: text }))
+        onTextChange={(website) =>
+          setDetails((detail) => ({ ...detail, website }))
         }
       />
+      <div>
+        <label>Price</label>
+        <DropdownButton
+          variant='secondary'
+          className='w-full'
+          title={currentPrice.label}
+        >
+          {Object.values(PRICE_OPTIONS).map((price, index) => (
+            <DropdownItem
+              key={price.label + index}
+              onClick={() =>
+                setDetails((detail) => ({ ...detail, price: price.value }))
+              }
+            >
+              {price.label}
+            </DropdownItem>
+          ))}
+        </DropdownButton>
+      </div>
       <div className='flex flex-col gap-4'>
         <label>Review</label>
         <Reviews
@@ -229,12 +281,12 @@ function EditCard({
           setDetails={setDetails}
         />
       </div>
-      <div>
+      {/* <div>
         <label>Things to try</label>
         <ul>
           {details.thingsToTry?.map((dish) => <li key={dish}>{dish}</li>)}
         </ul>
-      </div>
+      </div> */}
       <Button
         className='font-semibold py-2 px-4 rounded'
         disabled={details.name === ""}
@@ -247,3 +299,35 @@ function EditCard({
 }
 
 export default Card;
+
+function ReviewPrice({ price }: { price: number }) {
+  return (
+    <div className='flex'>
+      {Array(price)
+        .fill(1)
+        .map((_, key) => (
+          <DollarIcon key={key} />
+        ))}
+    </div>
+  );
+}
+
+function DollarIcon() {
+  return (
+    <svg
+      className='w-3 h-3 text-gray-800 '
+      aria-hidden='true'
+      xmlns='http://www.w3.org/2000/svg'
+      fill='none'
+      viewBox='0 0 11 20'
+    >
+      <path
+        stroke='currentColor'
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        strokeWidth='2'
+        d='M1.75 15.363a4.954 4.954 0 0 0 2.638 1.574c2.345.572 4.653-.434 5.155-2.247.502-1.813-1.313-3.79-3.657-4.364-2.344-.574-4.16-2.551-3.658-4.364.502-1.813 2.81-2.818 5.155-2.246A4.97 4.97 0 0 1 10 5.264M6 17.097v1.82m0-17.5v2.138'
+      />
+    </svg>
+  );
+}
